@@ -68,7 +68,7 @@ jobs:
     needs:
       - build
     env:
-      IMAGE_NAME: gardenlinux/glvd-api
+      IMAGE_NAME: fwilhe/glvd-api
       IMAGE_TAG: latest
 
     steps:
@@ -149,63 +149,63 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         run: echo "Image pushed to ${{ steps.push-to-ghcr.outputs.digest }}"
 
-      - name: Get OIDC token
-        if: ${{ github.event_name != 'pull_request' }}
-        id: get-token
-        run: |
-          IDTOKEN=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=glvd" | jq -r '.value')
-          echo "idToken=${IDTOKEN}" >> $GITHUB_OUTPUT
+      # - name: Get OIDC token
+      #   if: ${{ github.event_name != 'pull_request' }}
+      #   id: get-token
+      #   run: |
+      #     IDTOKEN=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=glvd" | jq -r '.value')
+      #     echo "idToken=${IDTOKEN}" >> $GITHUB_OUTPUT
 
-      - uses: azure/k8s-set-context@v4
-        if: ${{ github.event_name != 'pull_request' }}
-        with:
-           method: kubeconfig
-           kubeconfig: "${{ secrets.KUBECONFIG }}"
+      # - uses: azure/k8s-set-context@v4
+      #   if: ${{ github.event_name != 'pull_request' }}
+      #   with:
+      #      method: kubeconfig
+      #      kubeconfig: "${{ secrets.KUBECONFIG }}"
 
-      - name: Deploy the image
-        if: ${{ github.event_name != 'pull_request' }}
-        run: kubectl --namespace default --token "${{ steps.get-token.outputs.idToken }}" set image deploy/glvd glvd-api=ghcr.io/gardenlinux/glvd-api:latest-linuxamd64_bare@${{ steps.bare.outputs.bare-amd64-digest }}
+      # - name: Deploy the image
+      #   if: ${{ github.event_name != 'pull_request' }}
+      #   run: kubectl --namespace default --token "${{ steps.get-token.outputs.idToken }}" set image deploy/glvd glvd-api=ghcr.io/gardenlinux/glvd-api:latest-linuxamd64_bare@${{ steps.bare.outputs.bare-amd64-digest }}
 
-  dependency-submission:
+  # dependency-submission:
 
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
+  #   runs-on: ubuntu-24.04
+  #   permissions:
+  #     contents: write
 
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'sapmachine'
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Set up JDK 21
+  #     uses: actions/setup-java@v4
+  #     with:
+  #       java-version: '21'
+  #       distribution: 'sapmachine'
 
-    # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
-    # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
-    - name: Generate and submit dependency graph
-      uses: gradle/actions/dependency-submission@06832c7b30a0129d7fb559bcc6e43d26f6374244 # v4
+  #   # Generates and submits a dependency graph, enabling Dependabot Alerts for all project dependencies.
+  #   # See: https://github.com/gradle/actions/blob/main/dependency-submission/README.md
+  #   - name: Generate and submit dependency graph
+  #     uses: gradle/actions/dependency-submission@06832c7b30a0129d7fb559bcc6e43d26f6374244 # v4
 
-  deploy-pages:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-24.04
-    needs:
-      - build
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'docs/asciidoc'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+  # deploy-pages:
+  #   environment:
+  #     name: github-pages
+  #     url: ${{ steps.deployment.outputs.page_url }}
+  #   runs-on: ubuntu-24.04
+  #   needs:
+  #     - build
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #     - name: Setup Pages
+  #       uses: actions/configure-pages@v5
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: build-artifacts
+  #     - name: Upload artifact
+  #       uses: actions/upload-pages-artifact@v3
+  #       with:
+  #         path: 'docs/asciidoc'
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v4
 
