@@ -149,22 +149,23 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         run: echo "Image pushed to ${{ steps.push-to-ghcr.outputs.digest }}"
 
-      # - name: Get OIDC token
-      #   if: ${{ github.event_name != 'pull_request' }}
-      #   id: get-token
-      #   run: |
-      #     IDTOKEN=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=glvd" | jq -r '.value')
-      #     echo "idToken=${IDTOKEN}" >> $GITHUB_OUTPUT
+      # BE SURE TO ADAPT audience
+      - name: Get OIDC token
+        if: ${{ github.event_name != 'pull_request' }}
+        id: get-token
+        run: |
+          IDTOKEN=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=foo" | jq -r '.value')
+          echo "idToken=${IDTOKEN}" >> $GITHUB_OUTPUT
 
-      # - uses: azure/k8s-set-context@v4
-      #   if: ${{ github.event_name != 'pull_request' }}
-      #   with:
-      #      method: kubeconfig
-      #      kubeconfig: "${{ secrets.KUBECONFIG }}"
+      - uses: azure/k8s-set-context@v4
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+           method: kubeconfig
+           kubeconfig: "${{ secrets.KUBECONFIG }}"
 
-      # - name: Deploy the image
-      #   if: ${{ github.event_name != 'pull_request' }}
-      #   run: kubectl --namespace default --token "${{ steps.get-token.outputs.idToken }}" set image deploy/glvd glvd-api=ghcr.io/fwilhe/glvd-api:latest-linuxamd64_bare@${{ steps.bare.outputs.bare-amd64-digest }}
+      - name: Deploy the image
+        if: ${{ github.event_name != 'pull_request' }}
+        run: kubectl --namespace default --token "${{ steps.get-token.outputs.idToken }}" set image deploy/glvd glvd-api=ghcr.io/fwilhe/glvd-api:latest-linuxamd64_bare@${{ steps.bare.outputs.bare-amd64-digest }}
 
   # dependency-submission:
 
