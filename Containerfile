@@ -21,6 +21,7 @@ RUN jlink \
 FROM ghcr.io/gardenlinux/gardenlinux:1592
 
 EXPOSE 8080
+EXPOSE 9090
 
 COPY --from=build /tinysapmachine /jre
 COPY --from=build /usr/src/glvd/glvd-0.0.1-SNAPSHOT.jar /
